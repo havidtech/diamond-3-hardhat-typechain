@@ -1,10 +1,11 @@
 /* global ethers */
 /* eslint prefer-const: "off" */
 
+import { Web3Provider } from "@ethersproject/providers";
 import { ContractReceipt, Transaction } from "ethers";
 import { TransactionDescription, TransactionTypes } from "ethers/lib/utils";
 import { ethers } from "hardhat";
-import { DiamondCutFacet } from "../typechain-types";
+import { DiamondCutFacet, TestFacet } from "../typechain-types";
 import { getSelectors, FacetCutAction } from "./libraries/diamond";
 
 export let DiamondAddress: string;
@@ -39,7 +40,7 @@ export async function deployDiamond() {
   // deploy facets
   console.log("");
   console.log("Deploying facets");
-  const FacetNames = ["DiamondLoupeFacet", "OwnershipFacet"];
+  const FacetNames = ["DiamondLoupeFacet", "OwnershipFacet", "TestFacet"];
   const cut = [];
   for (const FacetName of FacetNames) {
     const Facet = await ethers.getContractFactory(FacetName);
@@ -72,6 +73,12 @@ export async function deployDiamond() {
   }
   console.log("Completed diamond cut");
   DiamondAddress = diamond.address;
+
+  // Call a Function of TestFacet
+  let testFacet = await ethers.getContractAt("TestFacet", diamond.address) as TestFacet;
+
+  console.log("Test Facet returned => ", await testFacet.helloWorld());
+  
 }
 
 // We recommend this pattern to be able to use async/await everywhere
